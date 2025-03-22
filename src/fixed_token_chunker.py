@@ -1,4 +1,3 @@
-
 # This script is adapted from the LangChain package, developed by LangChain AI.
 # Original code can be found at: https://github.com/langchain-ai/langchain/blob/master/libs/text-splitters/langchain_text_splitters/base.py
 # License: MIT License
@@ -20,25 +19,32 @@ from typing import (
     TypeVar,
     Union,
 )
-from base_chunker import BaseChunker
-
 
 from attr import dataclass
 
 logger = logging.getLogger(__name__)
 
+
+class BaseChunker(ABC):
+    @abstractmethod
+    def split_text(self, text: str) -> List[str]:
+        pass
+
+
 TS = TypeVar("TS", bound="TextSplitter")
+
+
 class TextSplitter(BaseChunker, ABC):
     """Interface for splitting text into chunks."""
 
     def __init__(
-        self,
-        chunk_size: int = 4000,
-        chunk_overlap: int = 200,
-        length_function: Callable[[str], int] = len,
-        keep_separator: bool = False,
-        add_start_index: bool = False,
-        strip_whitespace: bool = True,
+            self,
+            chunk_size: int = 4000,
+            chunk_overlap: int = 200,
+            length_function: Callable[[str], int] = len,
+            keep_separator: bool = False,
+            add_start_index: bool = False,
+            strip_whitespace: bool = True,
     ) -> None:
         """Create a new TextSplitter.
 
@@ -87,8 +93,8 @@ class TextSplitter(BaseChunker, ABC):
         for d in splits:
             _len = self._length_function(d)
             if (
-                total + _len + (separator_len if len(current_doc) > 0 else 0)
-                > self._chunk_size
+                    total + _len + (separator_len if len(current_doc) > 0 else 0)
+                    > self._chunk_size
             ):
                 if total > self._chunk_size:
                     logger.warning(
@@ -103,9 +109,9 @@ class TextSplitter(BaseChunker, ABC):
                     # - we have a larger chunk than in the chunk overlap
                     # - or if we still have any chunks and the length is long
                     while total > self._chunk_overlap or (
-                        total + _len + (separator_len if len(current_doc) > 0 else 0)
-                        > self._chunk_size
-                        and total > 0
+                            total + _len + (separator_len if len(current_doc) > 0 else 0)
+                            > self._chunk_size
+                            and total > 0
                     ):
                         total -= self._length_function(current_doc[0]) + (
                             separator_len if len(current_doc) > 1 else 0
@@ -141,12 +147,12 @@ class TextSplitter(BaseChunker, ABC):
 
     @classmethod
     def from_tiktoken_encoder(
-        cls: Type[TS],
-        encoding_name: str = "gpt2",
-        model_name: Optional[str] = None,
-        allowed_special: Union[Literal["all"], AbstractSet[str]] = set(),
-        disallowed_special: Union[Literal["all"], Collection[str]] = "all",
-        **kwargs: Any,
+            cls: Type[TS],
+            encoding_name: str = "gpt2",
+            model_name: Optional[str] = None,
+            allowed_special: Union[Literal["all"], AbstractSet[str]] = set(),
+            disallowed_special: Union[Literal["all"], Collection[str]] = "all",
+            **kwargs: Any,
     ) -> TS:
         """Text splitter that uses tiktoken encoder to count length."""
         try:
@@ -182,19 +188,20 @@ class TextSplitter(BaseChunker, ABC):
             kwargs = {**kwargs, **extra_kwargs}
 
         return cls(length_function=_tiktoken_encoder, **kwargs)
-    
+
+
 class FixedTokenChunker(TextSplitter):
     """Splitting text to tokens using model tokenizer."""
 
     def __init__(
-        self,
-        encoding_name: str = "cl100k_base",
-        model_name: Optional[str] = None,
-        chunk_size: int = 4000,
-        chunk_overlap: int = 200,
-        allowed_special: Union[Literal["all"], AbstractSet[str]] = set(),
-        disallowed_special: Union[Literal["all"], Collection[str]] = "all",
-        **kwargs: Any,
+            self,
+            encoding_name: str = "cl100k_base",
+            model_name: Optional[str] = None,
+            chunk_size: int = 4000,
+            chunk_overlap: int = 200,
+            allowed_special: Union[Literal["all"], AbstractSet[str]] = set(),
+            disallowed_special: Union[Literal["all"], Collection[str]] = "all",
+            **kwargs: Any,
     ) -> None:
         """Create a new TextSplitter."""
         super().__init__(chunk_size=chunk_size, chunk_overlap=chunk_overlap, **kwargs)
@@ -231,6 +238,7 @@ class FixedTokenChunker(TextSplitter):
         )
 
         return split_text_on_tokens(text=text, tokenizer=tokenizer)
+
 
 @dataclass(frozen=True)
 class Tokenizer:
